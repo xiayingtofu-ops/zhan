@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三枚硬币 · 六次模拟</title>
+  <style>
+    :root {
+      --ink: #2b1d2f;
+      --paper: #fff4d8;
+      --pink: #f06a8a;
+      --pink-dark: #a83d66;
+      --gold: #ffd34e;
+      --gold-dark: #b86b25;
+      --cream: #fff0a8;
+      --mint: #74c9a5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      font-family: "Courier New", "Microsoft YaHei", monospace;
+      image-rendering: pixelated;
+      background-color: #f7bdd0;
+      background-image:
+        linear-gradient(45deg, rgba(255,255,255,.18) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,.18) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,.18) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,.18) 75%);
+      background-size: 32px 32px;
+      background-position: 0 0, 0 16px, 16px -16px, -16px 0;
+      display: grid;
+      place-items: center;
+      padding: 32px 16px;
+    }
+
+    .machine {
+      width: min(760px, 100%);
+      background: var(--paper);
+      border: 6px solid var(--ink);
+      box-shadow: 10px 10px 0 var(--pink-dark);
+    }
+
+    header {
+      padding: 24px 22px 20px;
+      text-align: center;
+      border-bottom: 5px solid var(--ink);
+      background: var(--cream);
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--pink-dark);
+      font-weight: 900;
+      letter-spacing: .18em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(26px, 6vw, 48px);
+      line-height: 1;
+      text-shadow: 3px 3px 0 #fff, 6px 6px 0 var(--pink);
+    }
+
+    .subtitle { margin: 14px 0 0; font-weight: 700; }
+
+    main { padding: 22px; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .actions { display: flex; gap: 10px; }
+
+    #copy { background: var(--mint); color: var(--ink); }
+
+    .status { font-weight: 900; }
+    .status::before { content: "▶ "; color: var(--pink-dark); }
+
+    button {
+      appearance: none;
+      border: 4px solid var(--ink);
+      padding: 11px 18px;
+      background: var(--pink);
+      color: #fff;
+      font: 900 16px/1 "Courier New", "Microsoft YaHei", monospace;
+      box-shadow: 5px 5px 0 var(--ink);
+      cursor: pointer;
+    }
+
+    button:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+    button:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0 var(--ink); }
+    button:focus-visible { outline: 4px dashed var(--pink-dark); outline-offset: 5px; }
+    button:disabled { cursor: wait; filter: grayscale(.35); }
+
+    .results {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .round {
+      display: grid;
+      grid-template-columns: 62px 1fr 74px;
+      align-items: center;
+      gap: 14px;
+      min-height: 88px;
+      padding: 10px 14px;
+      border: 4px solid var(--ink);
+      background: #fffaf0;
+      box-shadow: 4px 4px 0 #d89cac;
+    }
+
+    .round-number { font-weight: 900; text-align: center; }
+    .round-number b { display: block; font-size: 25px; color: var(--pink-dark); }
+
+    .coins { display: flex; justify-content: center; gap: clamp(9px, 3vw, 22px); }
+
+    .coin {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border: 5px solid var(--ink);
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--ink);
+      font-weight: 900;
+      font-size: 21px;
+      box-shadow: inset -6px -6px 0 var(--gold-dark), 4px 4px 0 var(--ink);
+      transform-style: preserve-3d;
+    }
+
+    .coin.back { background: var(--mint); box-shadow: inset -6px -6px 0 #39866d, 4px 4px 0 var(--ink); }
+    .coin::after { content: ""; position: absolute; inset: 7px; border: 2px dashed rgba(43,29,47,.55); border-radius: 50%; }
+    .coin span { z-index: 1; }
+    .coin.flipping { animation: flip .18s steps(2) infinite; }
+
+    @keyframes flip {
+      0% { transform: translateY(0) rotateY(0); }
+      50% { transform: translateY(-7px) rotateY(90deg); }
+      100% { transform: translateY(0) rotateY(180deg); }
+    }
+
+    .round-score { text-align: center; font-weight: 900; }
+    .round-score strong { display: block; font-size: 22px; color: var(--pink-dark); }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .stat {
+      border: 4px solid var(--ink);
+      padding: 12px 8px;
+      background: var(--cream);
+      text-align: center;
+      font-weight: 900;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+    .stat b { display: block; margin-top: 3px; font-size: 25px; color: var(--pink-dark); }
+
+    footer { padding: 14px; text-align: center; border-top: 5px solid var(--ink); font-size: 13px; font-weight: 700; }
+
+    @media (max-width: 520px) {
+      body { padding: 14px 10px; }
+      header, main { padding-left: 12px; padding-right: 12px; }
+      .toolbar { align-items: stretch; flex-direction: column; }
+      .actions { flex-direction: column; }
+      button { width: 100%; }
+      .round { grid-template-columns: 42px 1fr; gap: 8px; padding: 8px; }
+      .round-score { grid-column: 1 / -1; display: flex; justify-content: center; gap: 6px; }
+      .round-score strong { display: inline; font-size: inherit; }
+      .coin { width: 50px; height: 50px; font-size: 18px; border-width: 4px; }
+      .summary { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .coin.flipping { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <section class="machine" aria-labelledby="title">
+    <header>
+      <p class="eyebrow">PIXEL LUCK LAB</p>
+      <h1 id="title">三枚硬币</h1>
+      <p class="subtitle">每局投掷 3 枚 · 连续模拟 6 次</p>
+    </header>
+
+    <main>
+      <div class="toolbar">
+        <div class="status" id="status" aria-live="polite">本轮结果已生成</div>
+        <div class="actions">
+          <button id="copy" type="button">复制结果</button>
+          <button id="toss" type="button">再投六次!</button>
+        </div>
+      </div>
+
+      <ol class="results" id="results" aria-label="六次投掷结果"></ol>
+
+      <section class="summary" aria-label="统计结果">
+        <div class="stat">正面总数<b id="heads">0</b></div>
+        <div class="stat">反面总数<b id="tails">0</b></div>
+        <div class="stat">正面比例<b id="ratio">0%</b></div>
+      </section>
+    </main>
+
+    <footer>每次结果均独立随机 · 共投掷 18 枚次</footer>
+  </section>
+
+  <script>
+    const resultsEl = document.getElementById('results');
+    const tossButton = document.getElementById('toss');
+    const copyButton = document.getElementById('copy');
+    const statusEl = document.getElementById('status');
+    const headsEl = document.getElementById('heads');
+    const tailsEl = document.getElementById('tails');
+    const ratioEl = document.getElementById('ratio');
+    let currentRounds = [];
+
+    function randomSide() {
+      const value = new Uint32Array(1);
+      crypto.getRandomValues(value);
+      return value[0] % 2 === 0 ? '正' : '反';
+    }
+
+    function makeCoin(side, flipping = false) {
+      const coin = document.createElement('div');
+      coin.className = `coin ${side === '反' ? 'back' : ''} ${flipping ? 'flipping' : ''}`;
+      coin.setAttribute('aria-label', `${side}面`);
+      coin.innerHTML = `<span>${side}</span>`;
+      return coin;
+    }
+
+    function renderRound(index, sides, flipping = false) {
+      const item = document.createElement('li');
+      item.className = 'round';
+
+      const label = document.createElement('div');
+      label.className = 'round-number';
+      label.innerHTML = `第<b>${index + 1}</b>次`;
+
+      const coins = document.createElement('div');
+      coins.className = 'coins';
+      sides.forEach(side => coins.appendChild(makeCoin(side, flipping)));
+
+      const score = document.createElement('div');
+      score.className = 'round-score';
+      const count = sides.filter(side => side === '正').length;
+      score.innerHTML = `正面<strong>${count} / 3</strong>`;
+
+      item.append(label, coins, score);
+      return item;
+    }
+
+    function updateSummary(rounds) {
+      const heads = rounds.flat().filter(side => side === '正').length;
+      const tails = 18 - heads;
+      headsEl.textContent = heads;
+      tailsEl.textContent = tails;
+      ratioEl.textContent = `${Math.round(heads / 18 * 100)}%`;
+    }
+
+    async function tossAll(animate = true) {
+      tossButton.disabled = true;
+      statusEl.textContent = animate ? '硬币翻滚中…' : '本轮结果已生成';
+      const rounds = Array.from({ length: 6 }, () => Array.from({ length: 3 }, randomSide));
+      currentRounds = rounds;
+      resultsEl.replaceChildren();
+
+      if (!animate) {
+        rounds.forEach((sides, index) => resultsEl.appendChild(renderRound(index, sides)));
+      } else {
+        rounds.forEach((_, index) => resultsEl.appendChild(renderRound(index, ['正', '反', '正'], true)));
+        await new Promise(resolve => setTimeout(resolve, 620));
+        resultsEl.replaceChildren();
+        rounds.forEach((sides, index) => resultsEl.appendChild(renderRound(index, sides)));
+      }
+
+      updateSummary(rounds);
+      statusEl.textContent = '本轮结果已生成';
+      tossButton.disabled = false;
+    }
+
+    function formatResults() {
+      const lines = currentRounds.map((sides, index) =>
+        `第${index + 1}次：${sides.map(side => `${side}面`).join('、')}`
+      );
+      const heads = currentRounds.flat().filter(side => side === '正').length;
+      lines.push(`汇总：正面 ${heads} 次，反面 ${18 - heads} 次`);
+      return lines.join('\n');
+    }
+
+    async function copyResults() {
+      const text = formatResults();
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+      }
+
+      statusEl.textContent = '结果已复制，可以 Ctrl+V 粘贴';
+      copyButton.textContent = '复制成功!';
+      window.setTimeout(() => { copyButton.textContent = '复制结果'; }, 1500);
+    }
+
+    tossButton.addEventListener('click', () => tossAll(true));
+    copyButton.addEventListener('click', copyResults);
+    tossAll(false);
+  </script>
+</body>
+</html>
