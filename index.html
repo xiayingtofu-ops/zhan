@@ -192,11 +192,256 @@
       .coin.flipping { animation: none; }
     }
   </style>
+  <style>
+    :root {
+      --ink: #252421;
+      --paper: #f4f0e7;
+      --paper-light: #faf8f2;
+      --muted-ink: #77736b;
+      --hairline: #c9c2b5;
+      --cinnabar: #a43a2d;
+      --cinnabar-dark: #74291f;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      margin: 0;
+      padding: 64px 24px;
+      color: var(--ink);
+      font-family: "Noto Serif SC", "Songti SC", SimSun, serif;
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(circle at 18% 12%, rgba(37, 36, 33, .025), transparent 30%),
+        radial-gradient(circle at 84% 88%, rgba(37, 36, 33, .035), transparent 27%);
+    }
+
+    .machine {
+      position: relative;
+      width: min(720px, 100%);
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+
+    .machine::before {
+      content: "";
+      position: absolute;
+      top: -26px;
+      left: 50%;
+      width: 96px;
+      height: 2px;
+      background: var(--ink);
+      opacity: .75;
+      transform: translateX(-50%);
+    }
+
+    header {
+      padding: 34px 20px 58px;
+      border: 0;
+      text-align: center;
+      background: transparent;
+    }
+
+    .eyebrow {
+      margin: 0 0 20px;
+      color: var(--muted-ink);
+      font-family: Georgia, serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: .38em;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--ink);
+      font-size: clamp(34px, 7vw, 54px);
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: .2em;
+      text-shadow: none;
+      transform: translateX(.1em);
+    }
+
+    .subtitle {
+      margin: 22px 0 0;
+      color: var(--muted-ink);
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: .16em;
+    }
+
+    main { padding: 0; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin: 0 0 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .status {
+      color: var(--muted-ink);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: .08em;
+    }
+
+    .status::before { content: ""; }
+    .actions { display: flex; gap: 12px; }
+
+    button,
+    #copy {
+      border: 1px solid var(--ink);
+      padding: 9px 18px;
+      background: transparent;
+      color: var(--ink);
+      font: 400 14px/1.2 "Noto Serif SC", "Songti SC", SimSun, serif;
+      letter-spacing: .1em;
+      box-shadow: none;
+      cursor: pointer;
+      transition: color .18s ease, background-color .18s ease, border-color .18s ease;
+    }
+
+    #toss {
+      border-color: var(--cinnabar);
+      background: var(--cinnabar);
+      color: var(--paper-light);
+    }
+
+    button:hover,
+    #copy:hover {
+      transform: none;
+      border-color: var(--cinnabar-dark);
+      background: var(--cinnabar-dark);
+      color: var(--paper-light);
+      box-shadow: none;
+    }
+
+    button:active { transform: none; box-shadow: none; opacity: .8; }
+    button:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 3px; }
+    button:disabled { opacity: .45; filter: none; }
+
+    .results { display: grid; gap: 0; }
+
+    .round {
+      display: grid;
+      grid-template-columns: 62px 1fr 72px;
+      align-items: center;
+      gap: 22px;
+      min-height: 92px;
+      padding: 18px 4px;
+      border: 0;
+      border-bottom: 1px solid var(--hairline);
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .round-number {
+      color: var(--muted-ink);
+      font-size: 12px;
+      font-weight: 400;
+      text-align: left;
+      letter-spacing: .08em;
+    }
+
+    .round-number b {
+      display: inline;
+      margin-left: 3px;
+      color: var(--ink);
+      font-size: 20px;
+      font-weight: 400;
+    }
+
+    .coins { gap: clamp(20px, 5vw, 42px); }
+
+    .coin,
+    .coin.back {
+      width: 52px;
+      height: 52px;
+      border: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      font-size: 17px;
+      font-weight: 400;
+      box-shadow: none;
+    }
+
+    .coin.back { border-color: var(--muted-ink); color: var(--muted-ink); }
+    .coin::after { inset: 5px; border: 1px solid currentColor; opacity: .3; }
+
+    .round-score {
+      color: var(--muted-ink);
+      font-size: 12px;
+      font-weight: 400;
+      text-align: right;
+    }
+
+    .round-score strong {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin-top: 46px;
+      border-top: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .stat {
+      padding: 19px 8px 17px;
+      border: 0;
+      border-right: 1px solid var(--hairline);
+      background: transparent;
+      color: var(--muted-ink);
+      font-size: 12px;
+      font-weight: 400;
+      text-align: center;
+      box-shadow: none;
+      letter-spacing: .08em;
+    }
+
+    .stat:last-child { border-right: 0; }
+    .stat b { margin-top: 8px; color: var(--ink); font-size: 23px; font-weight: 400; }
+
+    footer {
+      margin-top: 52px;
+      padding: 0;
+      border: 0;
+      color: var(--muted-ink);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: .14em;
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 42px 18px; }
+      header { padding: 24px 0 44px; }
+      .toolbar { align-items: stretch; flex-direction: column; gap: 14px; }
+      .actions { flex-direction: row; }
+      button { width: auto; flex: 1; }
+      .round { grid-template-columns: 42px 1fr; gap: 8px; padding: 16px 0; }
+      .round-score { grid-column: 1 / -1; display: flex; justify-content: center; gap: 6px; }
+      .round-score strong { display: inline; margin-top: 0; font-size: 12px; }
+      .coin { width: 46px; height: 46px; font-size: 15px; }
+      .summary { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
 </head>
 <body>
   <section class="machine" aria-labelledby="title">
     <header>
-      <p class="eyebrow">PIXEL LUCK LAB</p>
+      <p class="eyebrow">SIX LINES · THREE COINS</p>
       <h1 id="title">三枚硬币</h1>
       <p class="subtitle">每局投掷 3 枚 · 连续模拟 6 次</p>
     </header>
@@ -206,7 +451,7 @@
         <div class="status" id="status" aria-live="polite">本轮结果已生成</div>
         <div class="actions">
           <button id="copy" type="button">复制结果</button>
-          <button id="toss" type="button">再投六次!</button>
+          <button id="toss" type="button">再投六次</button>
         </div>
       </div>
 
