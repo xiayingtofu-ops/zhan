@@ -297,11 +297,20 @@
     }
 
     function formatResults() {
+      const now = new Date();
+      const pad = value => String(value).padStart(2, '0');
+      const timestamp = `${now.getFullYear()}年${pad(now.getMonth() + 1)}月${pad(now.getDate())}日 ${pad(now.getHours())}时`;
       const lines = currentRounds.map((sides, index) =>
         `第${index + 1}次：${sides.map(side => `${side}面`).join('、')}`
       );
       const heads = currentRounds.flat().filter(side => side === '正').length;
-      lines.push(`汇总：正面 ${heads} 次，反面 ${18 - heads} 次`);
+      lines.unshift(`起卦时间：${timestamp}`);
+      lines.push(
+        `汇总：正面 ${heads} 次，反面 ${18 - heads} 次`,
+        '',
+        '六爻解卦提示词：',
+        '请根据以上三枚硬币连续六次的投掷结果，使用六爻三钱起卦法排出本卦、动爻和变卦。以第一次投掷为初爻，依次由下往上排列，第六次为上爻。请先说明正反面对应的数值规则，再详细分析卦象、动爻、体用关系及对当前事项的启示；如缺少所问事项，请先给出整体卦意，并提醒我补充具体问题。'
+      );
       return lines.join('\n');
     }
 
