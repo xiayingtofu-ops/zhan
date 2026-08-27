@@ -1,24 +1,587 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>今天跑不跑？</title>
-<style>
-:root{--ink:#191914;--paper:#f6efdf;--red:#ff5733;--blue:#5874ff;--acid:#dcff18;--muted:#756f64}*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font-family:Inter,"Microsoft YaHei",sans-serif;background:radial-gradient(circle at 15% 15%,#ff573329,transparent 28%),radial-gradient(circle at 85% 85%,#5874ff29,transparent 30%),var(--paper)}body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.13;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}.page{width:min(1050px,calc(100% - 32px));min-height:100vh;margin:auto;display:grid;grid-template-rows:auto 1fr auto;position:relative}header,footer{display:flex;justify-content:space-between;align-items:center;padding:22px 0;border-bottom:2px solid;font-size:12px;font-weight:900;letter-spacing:.13em}.brand{display:flex;gap:10px;align-items:center}.dot{width:13px;height:13px;border-radius:50%;background:var(--red);box-shadow:8px 0 var(--acid)}.date,footer{color:var(--muted)}main{display:grid;grid-template-columns:.9fr 1.1fr;align-items:center;gap:clamp(35px,7vw,90px);padding:55px 0}.tag{display:inline-block;margin:0 0 19px;padding:7px 10px;border:2px solid;background:var(--acid);font-size:12px;font-weight:900;transform:rotate(-2deg);box-shadow:3px 3px var(--ink)}h1{margin:0;font-size:clamp(64px,10vw,128px);font-weight:950;line-height:.84;letter-spacing:-.09em}h1 span{color:var(--red)}.intro{max-width:380px;margin:29px 0 30px;color:var(--muted);font-size:15px;line-height:1.8}button{position:relative;width:min(360px,100%);border:0;border-radius:50px;padding:23px 28px;background:var(--ink);color:#fff;font:900 20px/1 inherit;cursor:pointer;box-shadow:0 9px var(--red);transition:.15s}button:after{content:"→";position:absolute;right:27px;font-size:26px;top:18px}button:hover{transform:translateY(-3px);box-shadow:0 12px var(--red)}button:active{transform:translateY(7px);box-shadow:0 2px var(--red)}button:disabled{cursor:wait}.card{min-height:520px;position:relative;display:flex;flex-direction:column;justify-content:center;overflow:hidden;padding:clamp(28px,5vw,58px);border:2px solid;border-radius:4px;background:#ffffff80;box-shadow:14px 14px var(--ink)}.card:before{content:"";position:absolute;width:190px;height:190px;right:-75px;top:-75px;border:34px solid var(--acid);border-radius:50%}.label{color:var(--muted);font:800 12px/1 monospace;letter-spacing:.15em}.result{min-height:125px;margin:23px 0 27px;display:flex;align-items:center;font-size:clamp(86px,15vw,150px);font-weight:950;line-height:.8;letter-spacing:-.08em}.run{color:var(--red)}.rest{color:var(--blue);font-size:clamp(72px,12vw,120px)}.thinking{color:var(--muted);animation:blink .22s steps(2) infinite}.reason{min-height:150px;margin:0;padding-top:22px;border-top:2px solid;font-size:15px;line-height:1.9}.stamp{position:absolute;right:28px;bottom:20px;padding:6px 10px;border:2px solid;border-radius:3px;font-size:11px;font-weight:900;letter-spacing:.12em;transform:rotate(-7deg);opacity:0}.stamp.show{opacity:.7;animation:stamp .35s cubic-bezier(.2,1.7,.4,1)}footer{border:0;border-top:2px solid}.count b{color:var(--ink)}@keyframes blink{50%{opacity:.25}}@keyframes pop{0%{transform:scale(.5) rotate(-4deg);opacity:0}70%{transform:scale(1.06)}}@keyframes stamp{from{transform:rotate(-7deg) scale(2.5);opacity:0}}.reveal{animation:pop .45s cubic-bezier(.2,1.4,.4,1)}@media(max-width:760px){main{grid-template-columns:1fr;padding:38px 0 50px}h1{font-size:clamp(70px,25vw,112px)}button{width:100%}.card{min-height:450px;box-shadow:9px 9px var(--ink)}.result{font-size:clamp(90px,36vw,140px)}.result.rest{font-size:clamp(72px,29vw,112px)}footer span:last-child{display:none}}@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三枚硬币 · 六次模拟</title>
+  <style>
+    :root {
+      --ink: #2b1d2f;
+      --paper: #fff4d8;
+      --pink: #f06a8a;
+      --pink-dark: #a83d66;
+      --gold: #ffd34e;
+      --gold-dark: #b86b25;
+      --cream: #fff0a8;
+      --mint: #74c9a5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      font-family: "Courier New", "Microsoft YaHei", monospace;
+      image-rendering: pixelated;
+      background-color: #f7bdd0;
+      background-image:
+        linear-gradient(45deg, rgba(255,255,255,.18) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,.18) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,.18) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,.18) 75%);
+      background-size: 32px 32px;
+      background-position: 0 0, 0 16px, 16px -16px, -16px 0;
+      display: grid;
+      place-items: center;
+      padding: 32px 16px;
+    }
+
+    .machine {
+      width: min(760px, 100%);
+      background: var(--paper);
+      border: 6px solid var(--ink);
+      box-shadow: 10px 10px 0 var(--pink-dark);
+    }
+
+    header {
+      padding: 24px 22px 20px;
+      text-align: center;
+      border-bottom: 5px solid var(--ink);
+      background: var(--cream);
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--pink-dark);
+      font-weight: 900;
+      letter-spacing: .18em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(26px, 6vw, 48px);
+      line-height: 1;
+      text-shadow: 3px 3px 0 #fff, 6px 6px 0 var(--pink);
+    }
+
+    .subtitle { margin: 14px 0 0; font-weight: 700; }
+
+    main { padding: 22px; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .actions { display: flex; gap: 10px; }
+
+    #copy { background: var(--mint); color: var(--ink); }
+
+    .status { font-weight: 900; }
+    .status::before { content: "▶ "; color: var(--pink-dark); }
+
+    button {
+      appearance: none;
+      border: 4px solid var(--ink);
+      padding: 11px 18px;
+      background: var(--pink);
+      color: #fff;
+      font: 900 16px/1 "Courier New", "Microsoft YaHei", monospace;
+      box-shadow: 5px 5px 0 var(--ink);
+      cursor: pointer;
+    }
+
+    button:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+    button:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0 var(--ink); }
+    button:focus-visible { outline: 4px dashed var(--pink-dark); outline-offset: 5px; }
+    button:disabled { cursor: wait; filter: grayscale(.35); }
+
+    .results {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .round {
+      display: grid;
+      grid-template-columns: 62px 1fr 74px;
+      align-items: center;
+      gap: 14px;
+      min-height: 88px;
+      padding: 10px 14px;
+      border: 4px solid var(--ink);
+      background: #fffaf0;
+      box-shadow: 4px 4px 0 #d89cac;
+    }
+
+    .round-number { font-weight: 900; text-align: center; }
+    .round-number b { display: block; font-size: 25px; color: var(--pink-dark); }
+
+    .coins { display: flex; justify-content: center; gap: clamp(9px, 3vw, 22px); }
+
+    .coin {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border: 5px solid var(--ink);
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--ink);
+      font-weight: 900;
+      font-size: 21px;
+      box-shadow: inset -6px -6px 0 var(--gold-dark), 4px 4px 0 var(--ink);
+      transform-style: preserve-3d;
+    }
+
+    .coin.back { background: var(--mint); box-shadow: inset -6px -6px 0 #39866d, 4px 4px 0 var(--ink); }
+    .coin::after { content: ""; position: absolute; inset: 7px; border: 2px dashed rgba(43,29,47,.55); border-radius: 50%; }
+    .coin span { z-index: 1; }
+    .coin.flipping { animation: flip .18s steps(2) infinite; }
+
+    @keyframes flip {
+      0% { transform: translateY(0) rotateY(0); }
+      50% { transform: translateY(-7px) rotateY(90deg); }
+      100% { transform: translateY(0) rotateY(180deg); }
+    }
+
+    .round-score { text-align: center; font-weight: 900; }
+    .round-score strong { display: block; font-size: 22px; color: var(--pink-dark); }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .stat {
+      border: 4px solid var(--ink);
+      padding: 12px 8px;
+      background: var(--cream);
+      text-align: center;
+      font-weight: 900;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+    .stat b { display: block; margin-top: 3px; font-size: 25px; color: var(--pink-dark); }
+
+    footer { padding: 14px; text-align: center; border-top: 5px solid var(--ink); font-size: 13px; font-weight: 700; }
+
+    @media (max-width: 520px) {
+      body { padding: 14px 10px; }
+      header, main { padding-left: 12px; padding-right: 12px; }
+      .toolbar { align-items: stretch; flex-direction: column; }
+      .actions { flex-direction: column; }
+      button { width: 100%; }
+      .round { grid-template-columns: 42px 1fr; gap: 8px; padding: 8px; }
+      .round-score { grid-column: 1 / -1; display: flex; justify-content: center; gap: 6px; }
+      .round-score strong { display: inline; font-size: inherit; }
+      .coin { width: 50px; height: 50px; font-size: 18px; border-width: 4px; }
+      .summary { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .coin.flipping { animation: none; }
+    }
+  </style>
+  <style>
+    :root {
+      --ink: #252421;
+      --paper: #f4f0e7;
+      --paper-light: #faf8f2;
+      --muted-ink: #77736b;
+      --hairline: #c9c2b5;
+      --cinnabar: #a43a2d;
+      --cinnabar-dark: #74291f;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      margin: 0;
+      padding: 64px 24px;
+      color: var(--ink);
+      font-family: "Noto Serif SC", "Songti SC", SimSun, serif;
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(circle at 18% 12%, rgba(37, 36, 33, .025), transparent 30%),
+        radial-gradient(circle at 84% 88%, rgba(37, 36, 33, .035), transparent 27%);
+    }
+
+    .machine {
+      position: relative;
+      width: min(720px, 100%);
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+
+    .machine::before {
+      content: "";
+      position: absolute;
+      top: -26px;
+      left: 50%;
+      width: 96px;
+      height: 2px;
+      background: var(--ink);
+      opacity: .75;
+      transform: translateX(-50%);
+    }
+
+    header {
+      padding: 34px 20px 58px;
+      border: 0;
+      text-align: center;
+      background: transparent;
+    }
+
+    .eyebrow {
+      margin: 0 0 20px;
+      color: var(--muted-ink);
+      font-family: Georgia, serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: .38em;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--ink);
+      font-size: clamp(34px, 7vw, 54px);
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: .2em;
+      text-shadow: none;
+      transform: translateX(.1em);
+    }
+
+    .subtitle {
+      margin: 22px 0 0;
+      color: var(--muted-ink);
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: .16em;
+    }
+
+    main { padding: 0; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin: 0 0 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .status {
+      color: var(--muted-ink);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: .08em;
+    }
+
+    .status::before { content: ""; }
+    .actions { display: flex; gap: 12px; }
+
+    button,
+    #copy {
+      border: 1px solid var(--ink);
+      padding: 9px 18px;
+      background: transparent;
+      color: var(--ink);
+      font: 400 14px/1.2 "Noto Serif SC", "Songti SC", SimSun, serif;
+      letter-spacing: .1em;
+      box-shadow: none;
+      cursor: pointer;
+      transition: color .18s ease, background-color .18s ease, border-color .18s ease;
+    }
+
+    #toss {
+      border-color: var(--cinnabar);
+      background: var(--cinnabar);
+      color: var(--paper-light);
+    }
+
+    button:hover,
+    #copy:hover {
+      transform: none;
+      border-color: var(--cinnabar-dark);
+      background: var(--cinnabar-dark);
+      color: var(--paper-light);
+      box-shadow: none;
+    }
+
+    button:active { transform: none; box-shadow: none; opacity: .8; }
+    button:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 3px; }
+    button:disabled { opacity: .45; filter: none; }
+
+    .results { display: grid; gap: 0; }
+
+    .round {
+      display: grid;
+      grid-template-columns: 62px 1fr 72px;
+      align-items: center;
+      gap: 22px;
+      min-height: 92px;
+      padding: 18px 4px;
+      border: 0;
+      border-bottom: 1px solid var(--hairline);
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .round-number {
+      color: var(--muted-ink);
+      font-size: 12px;
+      font-weight: 400;
+      text-align: left;
+      letter-spacing: .08em;
+    }
+
+    .round-number b {
+      display: inline;
+      margin-left: 3px;
+      color: var(--ink);
+      font-size: 20px;
+      font-weight: 400;
+    }
+
+    .coins { gap: clamp(20px, 5vw, 42px); }
+
+    .coin,
+    .coin.back {
+      width: 52px;
+      height: 52px;
+      border: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      font-size: 17px;
+      font-weight: 400;
+      box-shadow: none;
+    }
+
+    .coin.back { border-color: var(--muted-ink); color: var(--muted-ink); }
+    .coin::after { inset: 5px; border: 1px solid currentColor; opacity: .3; }
+
+    .round-score {
+      color: var(--muted-ink);
+      font-size: 12px;
+      font-weight: 400;
+      text-align: right;
+    }
+
+    .round-score strong {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin-top: 46px;
+      border-top: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .stat {
+      padding: 19px 8px 17px;
+      border: 0;
+      border-right: 1px solid var(--hairline);
+      background: transparent;
+      color: var(--muted-ink);
+      font-size: 12px;
+      font-weight: 400;
+      text-align: center;
+      box-shadow: none;
+      letter-spacing: .08em;
+    }
+
+    .stat:last-child { border-right: 0; }
+    .stat b { margin-top: 8px; color: var(--ink); font-size: 23px; font-weight: 400; }
+
+    footer {
+      margin-top: 52px;
+      padding: 0;
+      border: 0;
+      color: var(--muted-ink);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: .14em;
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 42px 18px; }
+      header { padding: 24px 0 44px; }
+      .toolbar { align-items: stretch; flex-direction: column; gap: 14px; }
+      .actions { flex-direction: row; }
+      button { width: auto; flex: 1; }
+      .round { grid-template-columns: 42px 1fr; gap: 8px; padding: 16px 0; }
+      .round-score { grid-column: 1 / -1; display: flex; justify-content: center; gap: 6px; }
+      .round-score strong { display: inline; margin-top: 0; font-size: 12px; }
+      .coin { width: 46px; height: 46px; font-size: 15px; }
+      .summary { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
 </head>
-<body><div class="page">
-<header><div class="brand"><i class="dot"></i>今日运动决策所</div><div class="date" id="date"></div></header>
-<main><section><p class="tag">拒绝独立思考 · 交给命运</p><h1>今天<br><span>跑不跑</span>？</h1><p class="intro">如果你已经换好衣服，那就更该问一下。如果你还躺着，那也完全不影响命运替你做决定。</p><button id="decide">今天跑不跑</button></section>
-<section class="card" aria-live="polite"><div class="label">TODAY'S VERY SERIOUS VERDICT</div><div class="result" id="result">？</div><p class="reason" id="reason">点击按钮，获取一个毫无科学依据、但语气十分笃定的答案。</p><div class="stamp" id="stamp">命运已盖章</div></section></main>
-<footer><span class="count">命运今日已被打扰 <b id="count">0</b> 次</span><span>结果仅供参考 · 身体不适请休息</span></footer></div>
-<script>
-const $=s=>document.querySelector(s),btn=$('#decide'),result=$('#result'),reason=$('#reason'),stamp=$('#stamp'),counter=$('#count');let count=0;
-$('#date').textContent=new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',weekday:'long'}).format(new Date());
-const common=['毕竟天气看起来就很像一种天气','刚才那阵风明显有自己的想法','鞋带到现在也没有表示反对','楼下那只猫看了你一眼，应该是在暗示什么','冰箱里的酸奶保质期已经进入关键阶段','今天的云排列得颇有深意','手机电量这个数字很有象征意义','隔壁关门的声音十分坚定','宇宙虽然没回消息，但大概已经默认了','事情都走到打开这个网页这一步了','拖延五分钟和思考人生的区别本来就不大','你的运动手表最近多少有点寂寞','今天袜子的左右脚配合得异常默契','从概率学的角度来说，总得有个结果','不管做什么，晚饭都还是会到来','朋友圈里总有人比你更自律，也总有人没有','刚闪过的第一个念头通常不负责任但很响亮','总不能让买来的装备只负责占地方','地球已经自转这么久，也不差你这一圈','专家没有这么说，但听起来很像专家说的'];
-const yes=['跑。主要是因为你问了，说明心里多少还是想去的','跑。不是为了配速，是为了回来洗澡时获得一种虚假的重启感','跑。哪怕只跑到楼下再绕回来，也算给今天一个交代','跑。腿可以慢，歌单不能白建，运动软件也该偶尔解除休眠','跑。今天适合制造一点“我居然真的出门了”的震惊','跑。先出去十分钟，十分钟后回来也算战略性完成','跑。沙发已经充分体验过你了，轮到马路了','跑。速度不重要，重要的是让晚饭显得更理直气壮'];
-const no=['不跑。今天适合保存体力，毕竟明天也可能继续纠结','不跑。你的意志已经完成了一次高强度心理折返跑','不跑。休息不是偷懒，是把计划暂存到更有希望的时间点','不跑。今天的核心训练是躺平时保持呼吸均匀','不跑。鞋可以放一天假，脚也没有提交加班申请','不跑。散个步，然后对外宣称这是主动恢复','不跑。今天先和被子建立稳定的合作关系','不跑。保存膝盖的新鲜度，为下一次突然自律做准备'];
-const pick=a=>a[Math.floor(Math.random()*a.length)];
-function chatter(run){let pool=[...common],bits=[];for(let i=0,n=5+Math.floor(Math.random()*4);i<n;i++)bits.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);return `${pick(run?yes:no)}。${bits.join('，')}。${run?'所以别再研究了，穿鞋，出门，慢慢跑也算跑。':'综上，今天就心安理得地不跑，最多出去走两步意思一下。'}`}
-btn.onclick=()=>{btn.disabled=true;stamp.classList.remove('show');result.className='result thinking';result.textContent='……';reason.textContent='正在综合分析空气湿度、袜子松紧、楼下路况、晚饭热量以及你不想承认的真实想法……';setTimeout(()=>{let run=Math.random()<.5;result.textContent=run?'跑':'不跑';result.className=`result ${run?'run':'rest'} reveal`;reason.textContent=chatter(run);stamp.style.color=run?'var(--red)':'var(--blue)';stamp.classList.add('show');counter.textContent=++count;btn.textContent='不服？再问一次';btn.disabled=false},720)};
-</script></body></html>
+<body>
+  <section class="machine" aria-labelledby="title">
+    <header>
+      <p class="eyebrow">SIX LINES · THREE COINS</p>
+      <h1 id="title">三枚硬币</h1>
+      <p class="subtitle">每局投掷 3 枚 · 连续模拟 6 次</p>
+    </header>
+
+    <main>
+      <div class="toolbar">
+        <div class="status" id="status" aria-live="polite">本轮结果已生成</div>
+        <div class="actions">
+          <button id="copy" type="button">复制结果</button>
+          <button id="toss" type="button">再投六次</button>
+        </div>
+      </div>
+
+      <ol class="results" id="results" aria-label="六次投掷结果"></ol>
+
+      <section class="summary" aria-label="统计结果">
+        <div class="stat">正面总数<b id="heads">0</b></div>
+        <div class="stat">反面总数<b id="tails">0</b></div>
+        <div class="stat">正面比例<b id="ratio">0%</b></div>
+      </section>
+    </main>
+
+    <footer>每次结果均独立随机 · 共投掷 18 枚次</footer>
+  </section>
+
+  <script>
+    const resultsEl = document.getElementById('results');
+    const tossButton = document.getElementById('toss');
+    const copyButton = document.getElementById('copy');
+    const statusEl = document.getElementById('status');
+    const headsEl = document.getElementById('heads');
+    const tailsEl = document.getElementById('tails');
+    const ratioEl = document.getElementById('ratio');
+    let currentRounds = [];
+
+    function randomSide() {
+      const value = new Uint32Array(1);
+      crypto.getRandomValues(value);
+      return value[0] % 2 === 0 ? '正' : '反';
+    }
+
+    function makeCoin(side, flipping = false) {
+      const coin = document.createElement('div');
+      coin.className = `coin ${side === '反' ? 'back' : ''} ${flipping ? 'flipping' : ''}`;
+      coin.setAttribute('aria-label', `${side}面`);
+      coin.innerHTML = `<span>${side}</span>`;
+      return coin;
+    }
+
+    function renderRound(index, sides, flipping = false) {
+      const item = document.createElement('li');
+      item.className = 'round';
+
+      const label = document.createElement('div');
+      label.className = 'round-number';
+      label.innerHTML = `第<b>${index + 1}</b>次`;
+
+      const coins = document.createElement('div');
+      coins.className = 'coins';
+      sides.forEach(side => coins.appendChild(makeCoin(side, flipping)));
+
+      const score = document.createElement('div');
+      score.className = 'round-score';
+      const count = sides.filter(side => side === '正').length;
+      score.innerHTML = `正面<strong>${count} / 3</strong>`;
+
+      item.append(label, coins, score);
+      return item;
+    }
+
+    function updateSummary(rounds) {
+      const heads = rounds.flat().filter(side => side === '正').length;
+      const tails = 18 - heads;
+      headsEl.textContent = heads;
+      tailsEl.textContent = tails;
+      ratioEl.textContent = `${Math.round(heads / 18 * 100)}%`;
+    }
+
+    async function tossAll(animate = true) {
+      tossButton.disabled = true;
+      statusEl.textContent = animate ? '硬币翻滚中…' : '本轮结果已生成';
+      const rounds = Array.from({ length: 6 }, () => Array.from({ length: 3 }, randomSide));
+      currentRounds = rounds;
+      resultsEl.replaceChildren();
+
+      if (!animate) {
+        rounds.forEach((sides, index) => resultsEl.appendChild(renderRound(index, sides)));
+      } else {
+        rounds.forEach((_, index) => resultsEl.appendChild(renderRound(index, ['正', '反', '正'], true)));
+        await new Promise(resolve => setTimeout(resolve, 620));
+        resultsEl.replaceChildren();
+        rounds.forEach((sides, index) => resultsEl.appendChild(renderRound(index, sides)));
+      }
+
+      updateSummary(rounds);
+      statusEl.textContent = '本轮结果已生成';
+      tossButton.disabled = false;
+    }
+
+    function formatResults() {
+      const now = new Date();
+      const pad = value => String(value).padStart(2, '0');
+      const timestamp = `${now.getFullYear()}年${pad(now.getMonth() + 1)}月${pad(now.getDate())}日 ${pad(now.getHours())}时`;
+      const lines = currentRounds.map((sides, index) =>
+        `第${index + 1}次：${sides.map(side => `${side}面`).join('、')}`
+      );
+      const heads = currentRounds.flat().filter(side => side === '正').length;
+      lines.unshift(`起卦时间：${timestamp}`);
+      lines.push(
+        `汇总：正面 ${heads} 次，反面 ${18 - heads} 次`,
+        '',
+        '六爻解卦提示词：',
+        '请根据以上三枚硬币连续六次的投掷结果，使用六爻三钱起卦法排出本卦、动爻和变卦。以第一次投掷为初爻，依次由下往上排列，第六次为上爻。请先说明正反面对应的数值规则，再详细分析卦象、动爻、体用关系及对当前事项的启示；如缺少所问事项，请先给出整体卦意，并提醒我补充具体问题。'
+      );
+      return lines.join('\n');
+    }
+
+    async function copyResults() {
+      const text = formatResults();
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+      }
+
+      statusEl.textContent = '结果已复制，可以 Ctrl+V 粘贴';
+      copyButton.textContent = '复制成功!';
+      window.setTimeout(() => { copyButton.textContent = '复制结果'; }, 1500);
+    }
+
+    tossButton.addEventListener('click', () => tossAll(true));
+    copyButton.addEventListener('click', copyResults);
+    tossAll(false);
+  </script>
+</body>
+</html>
