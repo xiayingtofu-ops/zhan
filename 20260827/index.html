@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="丁火命理报告山水版与完整收录版">
+  <title>丁火命理报告 · 双版本</title>
+  <style>
+    :root{--ink:#263830;--paper:#f4f0e6;--jade:#496d5d;--line:rgba(38,56,48,.18)}*{box-sizing:border-box}html,body{height:100%;margin:0}body{display:flex;flex-direction:column;background:var(--paper);color:var(--ink);font-family:"Noto Serif SC","Songti SC",SimSun,serif}.switcher{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px 22px;border-bottom:1px solid var(--line);background:rgba(244,240,230,.96);box-shadow:0 5px 22px rgba(38,56,48,.07)}.title{font-size:13px;letter-spacing:.2em;white-space:nowrap}.tabs{display:flex;gap:6px}.tab{appearance:none;border:1px solid transparent;padding:9px 16px;background:transparent;color:var(--ink);font:inherit;font-size:13px;letter-spacing:.08em;cursor:pointer}.tab:hover{background:rgba(73,109,93,.08)}.tab[aria-selected="true"]{border-color:var(--jade);background:var(--jade);color:#f7f4eb}.tab:focus-visible{outline:2px solid var(--jade);outline-offset:2px}.viewer{position:relative;flex:1;min-height:0}.panel{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--paper)}.panel[hidden]{display:none}.hint{font-size:12px;color:#6d786f;white-space:nowrap}@media(max-width:680px){.switcher{padding:9px 10px;align-items:stretch;flex-direction:column;gap:7px}.title,.hint{display:none}.tabs{display:grid;grid-template-columns:1fr 1fr}.tab{padding:8px 10px}}
+  </style>
+</head>
+<body>
+  <header class="switcher">
+    <div class="title">丁火命理报告 · 双版本</div>
+    <div class="tabs" role="tablist" aria-label="报告版本">
+      <button class="tab" id="tab-summary" type="button" role="tab" aria-selected="true" aria-controls="panel-summary">山水摘要版</button>
+      <button class="tab" id="tab-complete" type="button" role="tab" aria-selected="false" aria-controls="panel-complete">完整收录版</button>
+    </div>
+    <div class="hint">选择插页切换版本</div>
+  </header>
+  <main class="viewer">
+    <iframe class="panel" id="panel-summary" role="tabpanel" aria-labelledby="tab-summary" src="../index.html" title="山水摘要版"></iframe>
+    <iframe class="panel" id="panel-complete" role="tabpanel" aria-labelledby="tab-complete" src="../report-complete.html" title="完整收录版" hidden></iframe>
+  </main>
+  <script>
+    const tabs=[...document.querySelectorAll('[role="tab"]')];
+    const panels=[...document.querySelectorAll('[role="tabpanel"]')];
+    function selectTab(tab,updateHash=true){
+      tabs.forEach(item=>item.setAttribute('aria-selected',String(item===tab)));
+      panels.forEach(panel=>{panel.hidden=panel.id!==tab.getAttribute('aria-controls')});
+      if(updateHash)history.replaceState(null,'',tab.id==='tab-complete'?'#complete':'#summary');
+    }
+    tabs.forEach((tab,index)=>{
+      tab.addEventListener('click',()=>selectTab(tab));
+      tab.addEventListener('keydown',event=>{
+        if(!['ArrowLeft','ArrowRight'].includes(event.key))return;
+        event.preventDefault();
+        const next=tabs[(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length];
+        selectTab(next);next.focus();
+      });
+    });
+    selectTab(location.hash==='#complete'?tabs[1]:tabs[0],false);
+  </script>
+</body>
+</html>
